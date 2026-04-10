@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>医師用｜障害年金 更新 診察記録フォーム（小倉院）</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg:#f0f4f8; --surface:#fff; --primary:#3a5f8a; --primary-light:#6b9abf;
+    --primary-pale:#e8f1f8; --accent:#1e3a5a;
+    --text:#1a1a1a; --text-secondary:#4a4a4a; --text-light:#777;
+    --border:#ddd; --error:#b03030; --success:#2d6a4f;
+    --radius:12px; --radius-sm:8px; --shadow:0 2px 12px rgba(0,0,0,0.07);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:60px;}
+
+  /* ロック画面 */
+  #lockScreen{position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5a 0%,#3a5f8a 60%,#6b9abf 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}
+  .lock-box{background:#fff;border-radius:16px;padding:36px 28px;width:90%;max-width:340px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.2);}
+  .lock-icon{font-size:36px;margin-bottom:12px;}
+  .lock-box h2{font-family:'Noto Serif JP',serif;font-size:18px;color:var(--accent);margin-bottom:4px;}
+  .lock-box p{font-size:12px;color:var(--text-light);margin-bottom:20px;line-height:1.6;}
+  .lock-input{width:100%;padding:13px 16px;border:2px solid var(--border);border-radius:var(--radius-sm);font-family:'Noto Sans JP',sans-serif;font-size:16px;letter-spacing:0.2em;text-align:center;outline:none;transition:border-color .2s;margin-bottom:12px;}
+  .lock-input:focus{border-color:var(--primary);}
+  .lock-input.error{border-color:var(--error);animation:shake .3s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .lock-btn{width:100%;padding:13px;border:none;border-radius:var(--radius-sm);background:linear-gradient(135deg,#3a5f8a,#6b9abf);color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 3px 10px rgba(58,95,138,.3);transition:all .18s;}
+  .lock-btn:hover{transform:translateY(-1px);}
+  .lock-error{color:var(--error);font-size:12px;margin-top:8px;min-height:16px;}
+
+  #mainContent{display:none;}
+
+  .header{background:linear-gradient(135deg,#1e3a5a 0%,#3a5f8a 60%,#6b9abf 100%);padding:20px;display:flex;align-items:center;justify-content:space-between;}
+  .header-left h1{font-family:'Noto Serif JP',serif;color:#fff;font-size:17px;font-weight:600;}
+  .header-left p{color:rgba(255,255,255,.8);font-size:11.5px;margin-top:3px;}
+  .header-badge{display:inline-block;background:rgba(255,255,255,.2);color:#fff;font-size:10.5px;padding:3px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.3);}
+  .btn-lock{padding:5px 12px;border:1px solid rgba(255,255,255,.4);border-radius:20px;background:rgba(255,255,255,.1);color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:11px;cursor:pointer;}
+
+  .container{max-width:640px;margin:0 auto;padding:20px 14px;}
+
+  .card{background:var(--surface);border-radius:var(--radius);padding:22px 18px;margin-bottom:16px;box-shadow:var(--shadow);}
+  .sec-title{font-family:'Noto Serif JP',serif;font-size:16px;font-weight:600;color:var(--accent);margin-bottom:5px;display:flex;align-items:center;gap:9px;}
+  .sec-icon{width:30px;height:30px;background:var(--primary-pale);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+  .sec-desc{font-size:12px;color:var(--text-light);margin-bottom:16px;padding-left:39px;line-height:1.6;}
+
+  .field{margin-bottom:16px;}
+  .field:last-child{margin-bottom:0;}
+  label.fl{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px;}
+  .req{display:inline-block;background:var(--error);color:#fff;font-size:10px;font-weight:600;padding:1px 5px;border-radius:3px;margin-left:5px;vertical-align:middle;}
+  .opt{display:inline-block;background:#ccc;color:#fff;font-size:10px;padding:1px 5px;border-radius:3px;margin-left:5px;vertical-align:middle;}
+  .emsg{color:var(--error);font-size:11px;margin-top:4px;display:none;}
+  .emsg.on{display:block;}
+
+  input[type="text"],select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Noto Sans JP',sans-serif;font-size:14px;color:var(--text);background:#fafafa;outline:none;transition:border-color .2s;}
+  input:focus,select:focus,textarea:focus{border-color:var(--primary-light);background:#fff;box-shadow:0 0 0 3px rgba(107,154,191,.12);}
+  input.err,select.err,textarea.err{border-color:var(--error);}
+  textarea{resize:vertical;min-height:70px;line-height:1.6;}
+
+  /* ラジオ - ネイティブ */
+  .radio-list{display:flex;flex-direction:column;gap:8px;}
+  .radio-list label{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:13.5px;background:#fafafa;}
+  .radio-list label:hover{border-color:var(--primary-light);background:var(--primary-pale);}
+  .radio-list input[type="radio"]{width:18px;height:18px;accent-color:var(--primary);cursor:pointer;flex-shrink:0;}
+
+  /* ADL */
+  .adl-item{background:#f8f9fa;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;}
+  .adl-q{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+  .adl-sub{font-size:11.5px;color:var(--text-light);margin-bottom:10px;line-height:1.5;}
+  .adl-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .adl-opts label{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:12px;background:#fff;}
+  .adl-opts label:hover{border-color:var(--primary-light);background:var(--primary-pale);}
+  .adl-opts input[type="radio"]{width:16px;height:16px;accent-color:var(--primary);cursor:pointer;flex-shrink:0;}
+
+  /* 送信ボタン */
+  .btn-submit{width:100%;padding:15px;border:none;border-radius:var(--radius);background:linear-gradient(135deg,#3a5f8a,#6b9abf);color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:16px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(58,95,138,.3);transition:all .18s;margin-top:8px;}
+  .btn-submit:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(58,95,138,.4);}
+
+  /* QRコード画面 */
+  .qr-screen{background:var(--surface);border-radius:var(--radius);padding:32px 20px;margin-bottom:16px;box-shadow:var(--shadow);text-align:center;display:none;}
+  .qr-screen.active{display:block;animation:fadeIn .4s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .receipt-num{font-size:28px;font-weight:700;color:var(--accent);letter-spacing:.08em;margin:12px 0;font-family:monospace;}
+  .qr-wrap{display:inline-block;padding:16px;background:#fff;border:2px solid var(--border);border-radius:12px;margin:16px 0;}
+  .qr-desc{font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:16px;}
+  .btn-new{padding:12px 28px;border:2px solid var(--primary);border-radius:var(--radius-sm);background:#fff;color:var(--primary);font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;}
+  .btn-new:hover{background:var(--primary-pale);}
+  .btn-print{padding:12px 28px;border:none;border-radius:var(--radius-sm);background:var(--primary);color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-left:10px;transition:all .18s;}
+  .btn-print:hover{background:var(--accent);}
+  .divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+
+  @media(max-width:480px){.adl-opts{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- ロック画面 -->
+<div id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-icon">🩺</div>
+    <h2>医師専用フォーム</h2>
+    <p>ひいらぎこころクリニック 小倉院<br>スタッフ・患者はご利用になれません</p>
+    <input class="lock-input" type="password" id="pinInput" maxlength="20" placeholder="パスワードを入力"
+      onkeydown="if(event.key==='Enter') checkPin()" />
+    <button class="lock-btn" onclick="checkPin()">ログイン</button>
+    <div class="lock-error" id="lockError"></div>
+  </div>
+</div>
+
+<div id="mainContent">
+  <div class="header">
+    <div class="header-left">
+      <p style="display:inline-block;background:#c07a20;color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px;">🔄 更新用</p><h1>障害年金 更新 診察記録フォーム</h1>
+      <p>ひいらぎこころクリニック 小倉院｜医師専用</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="header-badge">医師専用</span>
+      <button class="btn-lock" onclick="lockScreen()">🔒 ロック</button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- フォーム -->
+    <div id="formArea">
+
+      <!-- 患者情報 -->
+      <div class="card">
+        <div class="sec-title"><div class="sec-icon">👤</div>患者情報</div>
+        <div class="sec-desc">照合のために氏名を入力してください</div>
+        <div class="field">
+          <label class="fl">患者氏名（漢字）<span class="req">必須</span></label>
+          <input type="text" id="pt_name" placeholder="例：山田 太郎" />
+          <div class="emsg" id="e_pt_name">氏名を入力してください</div>
+        </div>
+        <div class="field">
+          <label class="fl">現症日<span class="req">必須</span></label>
+          <input type="text" id="genshow_date_doc" placeholder="例：令和7年3月1日" />
+          <div class="emsg" id="e_genshow">現症日を入力してください</div>
+        </div>
+      </div>
+
+      <!-- 主病名 -->
+      <div class="card">
+        <div class="sec-title"><div class="sec-icon">🏥</div>主病名・既存障害</div>
+        <div class="field">
+          <label class="fl">主病名<span class="req">必須</span></label>
+          <div class="radio-list">
+            <label><input type="radio" name="main_diag" value="統合失調症">統合失調症</label>
+            <label><input type="radio" name="main_diag" value="気分障害（うつ病・双極性障害等）">気分障害（うつ病・双極性障害 等）</label>
+            <label><input type="radio" name="main_diag" value="妄想性障害">妄想性障害</label>
+            <label><input type="radio" name="main_diag" value="知的障害">知的障害</label>
+            <label><input type="radio" name="main_diag" value="発達障害">発達障害（ASD・ADHD 等）</label>
+            <label><input type="radio" name="main_diag" value="器質性精神神経障害">器質性精神神経障害</label>
+            <label><input type="radio" name="main_diag" value="てんかん">てんかん</label>
+          </div>
+          <div class="emsg" id="e_main_diag">主病名を選択してください</div>
+        </div>
+        <div class="field">
+          <label class="fl">既存障害（主病名以外の精神疾患）<span class="opt">任意</span></label>
+          <input type="text" id="comorbid" placeholder="例：不安障害、パニック障害（なければ空欄）" />
+        </div>
+      </div>
+
+      <!-- 日常生活能力の判定 -->
+      <div class="card">
+        <div class="sec-title"><div class="sec-icon">📋</div>日常生活能力の判定</div>
+        <div class="sec-desc">各項目について最も適切なものを選択してください</div>
+
+        <div class="adl-item">
+          <div class="adl-q">（1）適切な食事</div>
+          <div class="adl-sub">配膳などの準備も含めて、適当量をバランスよく食べることができる</div>
+          <div class="adl-opts">
+            <label><input type="radio" name="adl_0" value="おおむねできる">おおむねできる</label>
+            <label><input type="radio" name="adl_0" value="助言や指導があればできる">助言・指導があればできる</label>
+            <label><input type="radio" name="adl_0" value="助言や指導をしてもできない">助言・指導してもできない</label>
+            <label><input type="radio" name="adl_0" value="できない">できない</label>
+          </div>
+          <div class="emsg" id="e_adl_0">選択してください</div>
+        </div>
+
+        <div class="adl-item">
+          <div class="adl-q">（2）身辺の清潔保持</div>
+          <div class="adl-sub">洗面、洗髪、入浴等の身体の衛生保持や着替えができる</div>
+          <div class="adl-opts">
+            <label><input type="radio" name="adl_1" value="おおむねできる">おおむねできる</label>
+            <label><input type="radio" name="adl_1" value="助言や指導があればできる">助言・指導があればできる</label>
+            <label><input type="radio" name="adl_1" value="助言や指導をしてもできない">助言・指導してもできない</label>
+            <label><input type="radio" name="adl_1" value="できない">できない</label>
+          </div>
+          <div class="emsg" id="e_adl_1">選択してください</div>
+        </div>
+
+        <div class="adl-item">
+          <div class="adl-q">（3）金銭管理と買い物</div>
+          <div class="adl-sub">金銭を独力で適切に管理し、やりくりができる。また一人で買い物ができる</div>
+          <div class="adl-opts">
+            <label><input type="radio" name="adl_2" value="おおむねできる">おおむねできる</label>
+            <label><input type="radio" name="adl_2" value="助言や指導があればできる">助言・指導があればできる</label>
+            <label><input type="radio" name="adl_2" value="助言や指導をしてもできない">助言・指導してもできない</label>
+            <label><input type="radio" name="adl_2" value="できない">できない</label>
+          </div>
+          <div class="emsg" id="e_adl_2">選択してください</div>
+        </div>
+
+        <div class="adl-item">
+          <div class="adl-q">（4）通院と服薬</div>
+          <div class="adl-sub">規則的に通院や服薬を行い、病状を主治医に伝えることができる</div>
+          <div class="adl-opts">
+            <label><input type="radio" name="adl_3" value="おおむねできる">おおむねできる</label>
+            <label><input type="radio" name="adl_3" value="助言や指導があればできる">助言・指導があればできる</label>
+            <label><input type="radio" name="adl_3" value="助言や指導をしてもできない">助言・指導してもできない</label>
+            <label><input type="radio" name="adl_3" value="できない">できない</label>
+          </div>
+          <div class="emsg" id="e_adl_3">選択してください</div>
+        </div>
+
+        <div class="adl-item">
+          <div class="adl-q">（5）他人との意思伝達及び対人関係</div>
+          <div class="adl-sub">他の人の話を聞き、自分の意思を相手に伝えることができる、集団的行動が取れる</div>
+          <div class="adl-opts">
+            <label><input type="radio" name="adl_4" value="おおむねできる">おおむねできる</label>
+            <label><input type="radio" name="adl_4" value="助言や指導があればできる">助言・指導があればできる</label>
+            <label><input type="radio" name="adl_4" value="助言や指導をしてもできない">助言・指導してもできない</label>
+            <label><input type="radio" name="adl_4" value="できない">できない</label>
+          </div>
+          <div class="emsg" id="e_adl_4">選択してください</div>
+        </div>
+
+        <div class="adl-item">
+          <div class="adl-q">（6）身辺の安全保持及び危機対応</div>
+          <div class="adl-sub">事故等の危険から身を守ることができる、通常と異なる事態となった時に援助を求めることができる</div>
+          <div class="adl-opts">
+            <label><input type="radio" name="adl_5" value="おおむねできる">おおむねできる</label>
+            <label><input type="radio" name="adl_5" value="助言や指導があればできる">助言・指導があればできる</label>
+            <label><input type="radio" name="adl_5" value="助言や指導をしてもできない">助言・指導してもできない</label>
+            <label><input type="radio" name="adl_5" value="できない">できない</label>
+          </div>
+          <div class="emsg" id="e_adl_5">選択してください</div>
+        </div>
+
+        <div class="adl-item" style="margin-bottom:0">
+          <div class="adl-q">（7）社会性</div>
+          <div class="adl-sub">銀行での金銭の出し入れや公共施設等の利用が一人で可能。社会生活に必要な手続きが行える</div>
+          <div class="adl-opts">
+            <label><input type="radio" name="adl_6" value="おおむねできる">おおむねできる</label>
+            <label><input type="radio" name="adl_6" value="助言や指導があればできる">助言・指導があればできる</label>
+            <label><input type="radio" name="adl_6" value="助言や指導をしてもできない">助言・指導してもできない</label>
+            <label><input type="radio" name="adl_6" value="できない">できない</label>
+          </div>
+          <div class="emsg" id="e_adl_6">選択してください</div>
+        </div>
+      </div>
+
+      <!-- 日常生活能力の程度 -->
+      <div class="card">
+        <div class="sec-title"><div class="sec-icon">📊</div>日常生活能力の程度</div>
+        <div class="field">
+          <div class="radio-list">
+            <label><input type="radio" name="adl_level" value="1">（1）障害を認めるが、社会生活はほぼ普通にできる</label>
+            <label><input type="radio" name="adl_level" value="2">（2）家庭内での日常生活は普通だが、社会生活には援助が必要</label>
+            <label><input type="radio" name="adl_level" value="3">（3）家庭内での単純な日常生活はできるが、時に応じた援助が必要</label>
+            <label><input type="radio" name="adl_level" value="4">（4）日常生活における身のまわりのことも多くの援助が必要</label>
+            <label><input type="radio" name="adl_level" value="5">（5）身のまわりのこともほとんどできず、常時援助が必要</label>
+          </div>
+          <div class="emsg" id="e_adl_level">選択してください</div>
+        </div>
+      </div>
+
+      <!-- 備考 -->
+      <div class="card">
+        <div class="sec-title"><div class="sec-icon">📝</div>備考</div>
+        <div class="field" style="margin-bottom:0">
+          <label class="fl">特記事項・医師メモ<span class="opt">任意</span></label>
+          <textarea id="doc_memo" placeholder="前回からの変化、症状の推移、特記事項などご記入ください"></textarea>
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="submitDoc()">送信してQRコードを発行する →</button>
+    </div>
+
+    <!-- QR発行画面 -->
+    <div class="qr-screen" id="qrScreen">
+      <div style="font-size:13px;color:var(--text-light);margin-bottom:6px;">受付番号</div>
+      <div class="receipt-num" id="receiptNum"></div>
+      <div class="qr-desc">
+        下のQRコードを患者さんに読み込んでいただいてください。<br>
+        患者さんの入力が完了すると管理画面で自動的にひも付けられます。
+      </div>
+      <div class="qr-wrap">
+        <div id="qrcode"></div>
+      </div>
+      <div class="qr-desc" style="font-size:12px;color:var(--text-light);">
+        ※ このQRコードは患者用フォームへのリンクです
+      </div>
+      <div class="divider"></div>
+      <button class="btn-print" onclick="window.print()">🖨 印刷する</button>
+      <button class="btn-new" onclick="resetForm()">次の患者へ</button>
+    </div>
+
+  </div>
+</div>
+
+<style>
+@media print {
+  .header, .btn-new, .btn-print, #lockScreen { display:none !important; }
+  .qr-screen { display:block !important; box-shadow:none; }
+  body { background:#fff; }
+}
+</style>
+
+<script>
+const PIN = 'hrgkokura7455';
+const SESSION_KEY = 'nenkin_doctor_renewal_auth_kokura';
+const STORAGE_KEY = 'nenkin_doctor_renewal_kokura';
+const CLINIC = 'kokura';
+const CLINIC_PREFIX = 'KOK-R';
+const PATIENT_FORM_URL = 'https://hiiragi556.github.io/hiiragi-nenkin/nenkin_form_renewal_kokura.html';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxmt5tNRJWsylwa7wdPkedp6kbtxVmrsbcb6yew5EbnJf9233IvMnEEk9WjQsTyjAn4dQ/exec';
+
+// 認証
+function checkPin() {
+  const input = document.getElementById('pinInput');
+  if(input.value === PIN) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+  } else {
+    input.classList.add('error');
+    document.getElementById('lockError').textContent = 'パスワードが違います';
+    input.value = '';
+    setTimeout(()=>input.classList.remove('error'), 500);
+  }
+}
+
+function lockScreen() {
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('lockScreen').style.display = 'flex';
+  document.getElementById('pinInput').value = '';
+}
+
+if(sessionStorage.getItem(SESSION_KEY) === '1') {
+  document.getElementById('lockScreen').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+}
+
+// バリデーション
+function gr(name) { return document.querySelector(`[name="${name}"]:checked`)?.value || ''; }
+function gv(id) { return document.getElementById(id)?.value?.trim() || ''; }
+function showE(id, on) { const el = document.getElementById(id); if(el) el.classList.toggle('on', on); }
+
+function validate() {
+  let ok = true;
+  if(!gv('pt_name')) { document.getElementById('pt_name').classList.add('err'); showE('e_pt_name', true); ok=false; }
+  else { document.getElementById('pt_name').classList.remove('err'); showE('e_pt_name', false); }
+  if(!gv('genshow_date_doc')) { document.getElementById('genshow_date_doc').classList.add('err'); showE('e_genshow', true); ok=false; }
+  else { document.getElementById('genshow_date_doc').classList.remove('err'); showE('e_genshow', false); }
+  if(!gr('main_diag')) { showE('e_main_diag', true); ok=false; } else showE('e_main_diag', false);
+  for(let i=0; i<7; i++) {
+    if(!gr(`adl_${i}`)) { showE(`e_adl_${i}`, true); ok=false; } else showE(`e_adl_${i}`, false);
+  }
+  if(!gr('adl_level')) { showE('e_adl_level', true); ok=false; } else showE('e_adl_level', false);
+  return ok;
+}
+
+// 受付番号生成
+function generateReceiptNum() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,'0');
+  const d = String(now.getDate()).padStart(2,'0');
+  const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const todayKey = `${y}${m}${d}`;
+  const todayCount = existing.filter(r => r.receiptNum && r.receiptNum.includes(todayKey)).length;
+  const seq = String(todayCount + 1).padStart(3, '0');
+  return `${CLINIC_PREFIX}-${todayKey}-${seq}`;
+}
+
+// 送信
+async function submitDoc() {
+  if(!validate()) { window.scrollTo({top:0, behavior:'smooth'}); return; }
+
+  const receiptNum = generateReceiptNum();
+  const data = {
+    receiptNum,
+    clinic: CLINIC,
+    submittedAt: new Date().toISOString(),
+    type: 'renewal_doctor',
+    pt_name: gv('pt_name'),
+    genshow_date: gv('genshow_date_doc'),
+    main_diag: gr('main_diag'),
+    comorbid: gv('comorbid'),
+    adl: [0,1,2,3,4,5,6].map(i => gr(`adl_${i}`)),
+    adl_level: gr('adl_level'),
+    doc_memo: gv('doc_memo'),
+  };
+
+  // localStorage保存
+  const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  existing.unshift(data);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+
+  // Sheets送信
+  try {
+    fetch(GAS_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+  } catch(e) {}
+
+  // QR表示
+  showQR(receiptNum);
+}
+
+function showQR(receiptNum) {
+  document.getElementById('formArea').style.display = 'none';
+  const qrScreen = document.getElementById('qrScreen');
+  qrScreen.classList.add('active');
+  document.getElementById('receiptNum').textContent = receiptNum;
+
+  // QRコード生成
+  document.getElementById('qrcode').innerHTML = '';
+  const url = `${PATIENT_FORM_URL}?receipt=${encodeURIComponent(receiptNum)}`;
+  new QRCode(document.getElementById('qrcode'), {
+    text: url,
+    width: 200,
+    height: 200,
+    colorDark: '#1e3a5a',
+    colorLight: '#ffffff',
+  });
+}
+
+function resetForm() {
+  document.getElementById('formArea').style.display = 'block';
+  document.getElementById('qrScreen').classList.remove('active');
+  document.getElementById('qrcode').innerHTML = '';
+  // フォームリセット
+  document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+  document.querySelectorAll('input[type="text"], textarea').forEach(i => i.value = '');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+</body>
+</html>
