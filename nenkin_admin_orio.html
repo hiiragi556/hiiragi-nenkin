@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>折尾院｜障害年金 回答一覧</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{--bg:#f5f5f2;--surface:#fff;--primary:#3d7a5a;--primary-light:#6aa882;--primary-pale:#eaf4ed;--accent:#1e4d35;--text:#1a1a1a;--text-secondary:#4a4a4a;--text-light:#777;--border:#ddd;--error:#b03030;--radius:10px;--radius-sm:6px;--shadow:0 2px 10px rgba(0,0,0,0.07);}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:60px;}
+
+  #lockScreen{position:fixed;inset:0;background:linear-gradient(135deg,#1e4d35 0%,#3d7a5a 60%,#5a9070 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}
+  .lock-box{background:#fff;border-radius:16px;padding:36px 28px;width:90%;max-width:340px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.2);}
+  .lock-icon{font-size:36px;margin-bottom:12px;}
+  .lock-box h2{font-family:'Noto Serif JP',serif;font-size:18px;color:var(--accent);margin-bottom:4px;}
+  .lock-box p{font-size:12px;color:var(--text-light);margin-bottom:20px;line-height:1.6;}
+  .lock-input{width:100%;padding:13px 16px;border:2px solid var(--border);border-radius:var(--radius-sm);font-family:'Noto Sans JP',sans-serif;font-size:16px;text-align:center;outline:none;transition:border-color .2s;margin-bottom:12px;}
+  .lock-input:focus{border-color:var(--primary);}
+  .lock-input.error{border-color:var(--error);animation:shake .3s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .lock-btn{width:100%;padding:13px;border:none;border-radius:var(--radius-sm);background:linear-gradient(135deg,#3d7a5a,#6aa882);color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:15px;font-weight:600;cursor:pointer;}
+  .lock-error{color:var(--error);font-size:12px;margin-top:8px;min-height:16px;}
+
+  #mainContent{display:none;}
+  .header{background:linear-gradient(135deg,#1e4d35 0%,#3d7a5a 60%,#5a9070 100%);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .header-left h1{font-family:'Noto Serif JP',serif;color:#fff;font-size:17px;font-weight:600;}
+  .header-left p{color:rgba(255,255,255,.8);font-size:11.5px;margin-top:3px;}
+  .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .header-badge{display:inline-block;background:rgba(255,255,255,.15);color:#fff;font-size:10.5px;padding:3px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.25);}
+  .btn-lock{padding:5px 12px;border:1px solid rgba(255,255,255,.4);border-radius:20px;background:rgba(255,255,255,.1);color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:11px;cursor:pointer;}
+  .btn-reload{padding:5px 14px;border:none;border-radius:20px;background:rgba(255,255,255,.2);color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:11px;cursor:pointer;font-weight:600;}
+
+  .tab-bar{background:var(--surface);border-bottom:2px solid var(--border);display:flex;padding:0 16px;}
+  .tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--text-light);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;}
+  .tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
+
+  .container{max-width:900px;margin:0 auto;padding:16px 14px;}
+  .toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+  .count-badge{background:var(--primary-pale);color:var(--accent);font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px;border:1px solid #c0d8c8;}
+
+  .loading{text-align:center;padding:40px;color:var(--text-light);font-size:14px;}
+  .empty-state{background:var(--surface);border-radius:var(--radius);padding:50px 20px;text-align:center;box-shadow:var(--shadow);}
+  .empty-icon{font-size:40px;margin-bottom:12px;}
+  .empty-state h2{font-size:16px;color:var(--text-secondary);margin-bottom:6px;}
+  .empty-state p{font-size:13px;color:var(--text-light);line-height:1.7;}
+
+  .card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden;border:1px solid var(--border);}
+  .card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--primary-pale);border-bottom:1px solid #c8ddd0;cursor:pointer;user-select:none;}
+  .card-header-left{display:flex;align-items:center;gap:10px;}
+  .card-num{width:26px;height:26px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;}
+  .card-name{font-size:15px;font-weight:600;color:var(--accent);}
+  .card-date{font-size:11.5px;color:var(--text-light);}
+  .card-toggle{font-size:18px;color:var(--primary);transition:transform .2s;}
+  .card-toggle.open{transform:rotate(180deg);}
+  .card-body{padding:16px;display:none;}
+  .card-body.open{display:block;}
+
+  .sec{margin-bottom:14px;}
+  .sec:last-child{margin-bottom:0;}
+  .sec-label{font-size:11px;font-weight:700;color:var(--primary);letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1.5px solid var(--primary-pale);}
+  .row{display:grid;grid-template-columns:120px 1fr;gap:3px 10px;margin-bottom:5px;font-size:12.5px;align-items:start;}
+  .rk{color:var(--text-light);font-weight:500;}
+  .rv{color:var(--text);word-break:break-all;line-height:1.6;}
+  .rv.empty{color:#bbb;font-style:italic;}
+
+  .doc-sec{background:#f0f4f8;border-radius:6px;padding:12px;margin-bottom:10px;}
+  .doc-sec .sec-label{color:#1e3a5a;border-bottom-color:#c0d0e0;}
+
+  .btn-print{padding:6px 12px;border:1.5px solid var(--primary-light);border-radius:var(--radius-sm);background:var(--primary-pale);color:var(--accent);font-family:'Noto Sans JP',sans-serif;font-size:11.5px;font-weight:500;cursor:pointer;}
+  .btn-qr{padding:6px 12px;border:1.5px solid #6b9abf;border-radius:var(--radius-sm);background:#e8f1f8;color:#1e3a5a;font-family:'Noto Sans JP',sans-serif;font-size:11.5px;font-weight:500;cursor:pointer;margin-left:4px;}
+  .btn-del{padding:5px 10px;border:1px solid #e0c0c0;border-radius:var(--radius-sm);background:#fff8f8;color:#b05050;font-family:'Noto Sans JP',sans-serif;font-size:11px;cursor:pointer;margin-left:4px;}
+
+  /* QRモーダル */
+  .qr-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;}
+  .qr-modal-bg.open{display:flex;}
+  .qr-modal{background:#fff;border-radius:16px;padding:28px 24px;text-align:center;max-width:300px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.2);}
+  .qr-modal h3{font-size:15px;font-weight:600;color:var(--accent);margin-bottom:6px;}
+  .qr-receipt{font-size:13px;color:var(--text-light);margin-bottom:14px;font-family:monospace;}
+  .qr-wrap{display:inline-block;padding:12px;background:#fff;border:2px solid var(--border);border-radius:8px;margin-bottom:14px;}
+  .btn-modal-close{padding:10px 24px;border:2px solid var(--border);border-radius:var(--radius-sm);background:#fff;color:var(--text-secondary);font-family:'Noto Sans JP',sans-serif;font-size:13px;cursor:pointer;}
+
+  @media(max-width:480px){.row{grid-template-columns:90px 1fr;}.card-name{font-size:14px;}}
+</style>
+</head>
+<body>
+
+<!-- ロック画面 -->
+<div id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-icon">🔒</div>
+    <h2>スタッフ専用ページ</h2>
+    <p>ひいらぎこころクリニック 折尾院<br>暗証番号を入力してください。</p>
+    <input class="lock-input" type="password" id="pinInput" maxlength="20" placeholder="パスワードを入力"
+      onkeydown="if(event.key==='Enter') checkPin()" />
+    <button class="lock-btn" onclick="checkPin()">ログイン</button>
+    <div class="lock-error" id="lockError"></div>
+  </div>
+</div>
+
+<!-- メイン -->
+<div id="mainContent">
+  <div class="header">
+    <div class="header-left">
+      <h1>障害年金 回答一覧</h1>
+      <p>ひいらぎこころクリニック 折尾院｜スタッフ専用</p>
+    </div>
+    <div class="header-right">
+      <span class="header-badge">スタッフ専用</span>
+      <button class="btn-reload" onclick="loadData()">🔄 最新を取得</button>
+      <button class="btn-lock" onclick="lockScreen()">🔒 ロック</button>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('new')">新規申請</div>
+    <div class="tab" onclick="switchTab('renewal')">更新</div>
+  </div>
+
+  <div class="container">
+    <div class="toolbar">
+      <div class="count-badge" id="countBadge">読み込み中...</div>
+    </div>
+    <div id="listArea"><div class="loading">データを取得中...</div></div>
+  </div>
+</div>
+
+<!-- QRモーダル -->
+<div class="qr-modal-bg" id="qrModal">
+  <div class="qr-modal">
+    <h3>患者用QRコード</h3>
+    <div class="qr-receipt" id="modalReceiptNum"></div>
+    <div class="qr-wrap"><div id="modalQrCode"></div></div>
+    <p style="font-size:11.5px;color:var(--text-light);margin-bottom:14px;">このQRコードを患者さんのスマホで読み取ってもらってください</p>
+    <button class="btn-modal-close" onclick="closeQrModal()">閉じる</button>
+  </div>
+</div>
+
+<script>
+const PIN = 'hrgorio7900';
+const SESSION_KEY = 'nenkin_admin_auth_orio';
+const CLINIC = 'orio';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxmt5tNRJWsylwa7wdPkedp6kbtxVmrsbcb6yew5EbnJf9233IvMnEEk9WjQsTyjAn4dQ/exec';
+const PATIENT_FORM_URL = 'https://hiiragi556.github.io/hiiragi-nenkin/nenkin_form_orio.html';
+const PATIENT_RENEWAL_URL = 'https://hiiragi556.github.io/hiiragi-nenkin/nenkin_form_renewal_orio.html';
+
+let currentTab = 'new';
+let currentData = { patient: [], doctor: [] };
+
+// ===== 認証 =====
+function checkPin() {
+  const input = document.getElementById('pinInput');
+  if(input.value === PIN) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+    loadData();
+  } else {
+    input.classList.add('error');
+    document.getElementById('lockError').textContent = '暗証番号が違います';
+    input.value = '';
+    setTimeout(()=>input.classList.remove('error'), 500);
+  }
+}
+
+function lockScreen() {
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('lockScreen').style.display = 'flex';
+  document.getElementById('pinInput').value = '';
+}
+
+if(sessionStorage.getItem(SESSION_KEY) === '1') {
+  document.getElementById('lockScreen').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  loadData();
+}
+
+// ===== タブ切替 =====
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach((el,i) => {
+    el.classList.toggle('active', (i===0&&tab==='new')||(i===1&&tab==='renewal'));
+  });
+  render();
+}
+
+// ===== データ取得 =====
+async function loadData() {
+  document.getElementById('listArea').innerHTML = '<div class="loading">📡 スプレッドシートからデータを取得中...</div>';
+  document.getElementById('countBadge').textContent = '取得中...';
+  try {
+    const url = `${GAS_URL}?clinic=${CLINIC}&type=${currentTab === 'renewal' ? 'renewal' : 'new'}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    currentData = json;
+    render();
+  } catch(e) {
+    document.getElementById('listArea').innerHTML = `<div class="empty-state">
+      <div class="empty-icon">⚠️</div>
+      <h2>データの取得に失敗しました</h2>
+      <p>「最新を取得」ボタンを押してもう一度お試しください。<br>${e.message}</p>
+    </div>`;
+    document.getElementById('countBadge').textContent = 'エラー';
+  }
+}
+
+// ===== 描画 =====
+function fmt(v) {
+  if(v === null || v === undefined || v === '') return '<span class="rv empty">未入力</span>';
+  return String(v);
+}
+
+function render() {
+  const patients = currentData.patient || [];
+  const doctors  = currentData.doctor  || [];
+  const area = document.getElementById('countBadge');
+
+  // 受付番号でひも付け
+  const doctorMap = {};
+  doctors.forEach(d => { if(d['受付番号']) doctorMap[d['受付番号']] = d; });
+
+  document.getElementById('countBadge').textContent = `患者回答：${patients.length}件 ／ 医師入力：${doctors.length}件`;
+
+  if(patients.length === 0) {
+    document.getElementById('listArea').innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <h2>回答がまだありません</h2>
+      <p>「最新を取得」ボタンで更新してください。</p>
+    </div>`;
+    return;
+  }
+
+  document.getElementById('listArea').innerHTML = patients.map((item, idx) => {
+    const receiptNum = item['受付番号'] || '';
+    const docData = receiptNum ? doctorMap[receiptNum] : null;
+    return buildCard(item, idx, patients.length, docData, receiptNum);
+  }).join('');
+}
+
+function buildCard(item, idx, total, docData, receiptNum) {
+  const n = total - idx;
+  const isRenewal = currentTab === 'renewal';
+
+  const linkBadge = receiptNum
+    ? (docData
+        ? `<span style="background:#d4edda;color:#155724;font-size:10.5px;padding:2px 8px;border-radius:10px;font-weight:600;">✓ 医師入力あり</span>`
+        : `<span style="background:#fff3cd;color:#856404;font-size:10.5px;padding:2px 8px;border-radius:10px;font-weight:600;">⏳ 医師入力待ち</span>`)
+    : '';
+
+  const docSection = docData ? `
+    <div class="sec doc-sec">
+      <div class="sec-label">🩺 医師入力（診察記録）</div>
+      <div class="row"><span class="rk">主病名</span><span class="rv">${fmt(docData['主病名'])}</span></div>
+      <div class="row"><span class="rk">既存障害</span><span class="rv">${fmt(docData['既存障害'])}</span></div>
+      <div class="row"><span class="rk">現症日</span><span class="rv">${fmt(docData['現症日'])}</span></div>
+      <div class="row"><span class="rk">ADL判定</span><span class="rv">${fmt(docData['ADL判定'])}</span></div>
+      <div class="row"><span class="rk">ADL程度</span><span class="rv">${fmt(docData['ADL程度'])}</span></div>
+      ${docData['医師メモ'] ? `<div class="row"><span class="rk">医師メモ</span><span class="rv">${fmt(docData['医師メモ'])}</span></div>` : ''}
+    </div>` : `
+    <div style="background:#fff3cd;border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:12.5px;color:#856404;">
+      ⏳ 医師の診察記録がまだ入力されていません
+    </div>`;
+
+  const patientSection = isRenewal ? `
+    <div class="sec">
+      <div class="sec-label">① 基本情報・確認</div>
+      <div class="row"><span class="rk">氏名</span><span class="rv">${fmt(item['氏名（漢字）'])} (${fmt(item['氏名（フリガナ）'])})</span></div>
+      <div class="row"><span class="rk">診断書様式</span><span class="rv">${fmt(item['診断書様式'])}</span></div>
+      <div class="row"><span class="rk">参考書類</span><span class="rv">${fmt(item['参考書類'])}</span></div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">② 現症日</div>
+      <div class="row"><span class="rk">現症日</span><span class="rv">${fmt(item['現症日'])}</span></div>
+      <div class="row"><span class="rk">その他メモ</span><span class="rv">${fmt(item['年金事務所メモ'])}</span></div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">③ 就労状況</div>
+      <div class="row"><span class="rk">勤務先種別</span><span class="rv">${fmt(item['勤務先種別'])}</span></div>
+      <div class="row"><span class="rk">雇用形態</span><span class="rv">${fmt(item['雇用形態'])}</span></div>
+      <div class="row"><span class="rk">勤務年数</span><span class="rv">${fmt(item['勤務年数'])}</span></div>
+      <div class="row"><span class="rk">給与</span><span class="rv">${fmt(item['給与'])}</span></div>
+      <div class="row"><span class="rk">頻度</span><span class="rv">${fmt(item['頻度'])}</span></div>
+      <div class="row"><span class="rk">業務内容</span><span class="rv">${fmt(item['業務内容'])}</span></div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">④ 日常生活状況</div>
+      <div class="row"><span class="rk">生活環境</span><span class="rv">${fmt(item['生活環境'])}</span></div>
+      <div class="row"><span class="rk">同居者</span><span class="rv">${fmt(item['同居者'])}</span></div>
+      <div class="row"><span class="rk">福祉サービス</span><span class="rv">${fmt(item['福祉サービス'])}</span></div>
+      <div class="row"><span class="rk">前回からの変化</span><span class="rv">${fmt(item['前回からの変化'])}</span></div>
+    </div>` : `
+    <div class="sec">
+      <div class="sec-label">① 基本情報・確認</div>
+      <div class="row"><span class="rk">氏名</span><span class="rv">${fmt(item['氏名（漢字）'])} (${fmt(item['氏名（フリガナ）'])})</span></div>
+      <div class="row"><span class="rk">診断書様式</span><span class="rv">${fmt(item['診断書様式'])}</span></div>
+      <div class="row"><span class="rk">参考書類</span><span class="rv">${fmt(item['参考書類'])}</span></div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">② 現症日・初診情報</div>
+      <div class="row"><span class="rk">現症日</span><span class="rv">${fmt(item['現症日'])}</span></div>
+      <div class="row"><span class="rk">精神科初診医療機関</span><span class="rv">${fmt(item['精神科初診医療機関'])}</span></div>
+      <div class="row"><span class="rk">初診日</span><span class="rv">${fmt(item['初診日'])}</span></div>
+      <div class="row"><span class="rk">その他メモ</span><span class="rv">${fmt(item['年金事務所メモ'])}</span></div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">③ 教育歴</div>
+      <div class="row"><span class="rk">生育歴</span><span class="rv">${fmt(item['生育歴'])}</span></div>
+      <div class="row"><span class="rk">小学校</span><span class="rv">${fmt(item['小学校'])}</span></div>
+      <div class="row"><span class="rk">中学校</span><span class="rv">${fmt(item['中学校'])}</span></div>
+      <div class="row"><span class="rk">高校</span><span class="rv">${fmt(item['高校'])}</span></div>
+      <div class="row"><span class="rk">最終学歴</span><span class="rv">${fmt(item['最終学歴'])}</span></div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">③ 職歴・治療歴</div>
+      <div class="row"><span class="rk">職歴</span><span class="rv" style="white-space:pre-wrap">${fmt(item['職歴'])}</span></div>
+      <div class="row"><span class="rk">治療歴</span><span class="rv" style="white-space:pre-wrap">${fmt(item['治療歴'])}</span></div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">⑤ 就労状況</div>
+      <div class="row"><span class="rk">勤務先種別</span><span class="rv">${fmt(item['勤務先種別'])}</span></div>
+      <div class="row"><span class="rk">雇用形態</span><span class="rv">${fmt(item['雇用形態'])}</span></div>
+      <div class="row"><span class="rk">勤務年数</span><span class="rv">${fmt(item['勤務年数'])}</span></div>
+      <div class="row"><span class="rk">給与</span><span class="rv">${fmt(item['給与'])}</span></div>
+      <div class="row"><span class="rk">頻度</span><span class="rv">${fmt(item['頻度'])}</span></div>
+      <div class="row"><span class="rk">業務内容</span><span class="rv">${fmt(item['業務内容'])}</span></div>
+    </div>
+    <div class="sec">
+      <div class="sec-label">⑥ 日常生活状況</div>
+      <div class="row"><span class="rk">生活環境</span><span class="rv">${fmt(item['生活環境'])}</span></div>
+      <div class="row"><span class="rk">同居者</span><span class="rv">${fmt(item['同居者'])}</span></div>
+      <div class="row"><span class="rk">福祉サービス</span><span class="rv">${fmt(item['福祉サービス'])}</span></div>
+    </div>`;
+
+  return `
+  <div class="card" id="card_${idx}">
+    <div class="card-header" onclick="toggleCard(${idx})">
+      <div class="card-header-left">
+        <div class="card-num">${n}</div>
+        <div>
+          <div class="card-name">${fmt(item['氏名（漢字）'])||'（氏名未入力）'}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+            ${receiptNum?`<span style="font-size:11px;color:var(--text-light);font-family:monospace;">${receiptNum}</span>`:''}
+            ${linkBadge}
+          </div>
+          <div class="card-date">患者送信：${fmt(item['送信日時'])}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+        ${receiptNum?`<button class="btn-qr" onclick="event.stopPropagation();showQR('${receiptNum}','${isRenewal?'renewal':'new'}')">📱 QR表示</button>`:''}
+        <button class="btn-print" onclick="event.stopPropagation();exportPDF(${idx})">📄 PDF保存</button>
+        <button class="btn-del" onclick="event.stopPropagation();confirmDelete(${idx})">削除</button>
+        <span class="card-toggle" id="toggle_${idx}">▼</span>
+      </div>
+    </div>
+    <div class="card-body" id="body_${idx}">
+      ${docSection}
+      ${patientSection}
+    </div>
+  </div>`;
+}
+
+function confirmDelete(idx) {
+  const card = document.getElementById(`card_${idx}`);
+  if(!card) return;
+  const existing = card.querySelector('.del-confirm');
+  if(existing) { existing.remove(); return; }
+  // カードを開く
+  document.getElementById(`body_${idx}`).classList.add('open');
+  document.getElementById(`toggle_${idx}`).classList.add('open');
+  const div = document.createElement('div');
+  div.className = 'del-confirm';
+  div.style.cssText = 'background:#fff5f5;border:1.5px solid #e0c0c0;border-radius:6px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;';
+  div.innerHTML = `<span style="font-size:12.5px;color:#b03030;">本当に削除しますか？</span>
+    <div style="display:flex;gap:8px;">
+      <button onclick="execDelete(${idx})" style="padding:5px 14px;border:none;border-radius:5px;background:#b03030;color:#fff;font-size:12px;cursor:pointer;">削除する</button>
+      <button onclick="this.closest('.del-confirm').remove()" style="padding:5px 12px;border:1.5px solid #ccc;border-radius:5px;background:#fff;font-size:12px;cursor:pointer;">キャンセル</button>
+    </div>`;
+  document.getElementById(`body_${idx}`).prepend(div);
+}
+
+async function execDelete(idx) {
+  const patients = currentData.patient || [];
+  const item = patients[patients.length - 1 - idx];
+  if(!item) return;
+  const receiptNum = item['受付番号'] || '';
+  const sheetName = currentTab === 'renewal'
+    ? (CLINIC === 'kokura' ? '折尾院_更新' : '折尾院_更新')
+    : (CLINIC === 'kokura' ? '折尾院' : '折尾院');
+  try {
+    fetch(GAS_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        action: 'delete',
+        sheetName: sheetName,
+        receiptNum: receiptNum,
+      })
+    });
+    // ローカルから削除して再描画
+    currentData.patient.splice(patients.length - 1 - idx, 1);
+    render();
+  } catch(e) {
+    alert('削除に失敗しました。もう一度お試しください。');
+  }
+}
+
+function toggleCard(idx) {
+  document.getElementById(`body_${idx}`).classList.toggle('open');
+  document.getElementById(`toggle_${idx}`).classList.toggle('open');
+}
+
+// ===== QRコード表示 =====
+function showQR(receiptNum, type) {
+  const isRenewal = type === 'renewal';
+  const baseUrl = isRenewal ? PATIENT_RENEWAL_URL : PATIENT_FORM_URL;
+  const url = `${baseUrl}?receipt=${encodeURIComponent(receiptNum)}`;
+  document.getElementById('modalReceiptNum').textContent = receiptNum;
+  document.getElementById('modalQrCode').innerHTML = '';
+  new QRCode(document.getElementById('modalQrCode'), {
+    text: url, width: 180, height: 180,
+    colorDark: '#1e4d35', colorLight: '#ffffff',
+  });
+  document.getElementById('qrModal').classList.add('open');
+}
+
+function closeQrModal() {
+  document.getElementById('qrModal').classList.remove('open');
+  document.getElementById('modalQrCode').innerHTML = '';
+}
+
+// ===== PDF出力 =====
+function exportPDF(idx) {
+  const patients = currentData.patient || [];
+  const doctors  = currentData.doctor  || [];
+  const item = patients[patients.length - 1 - idx];
+  if(!item) return;
+  const receiptNum = item['受付番号'] || '';
+  const doctorMap = {};
+  doctors.forEach(d => { if(d['受付番号']) doctorMap[d['受付番号']] = d; });
+  const docData = receiptNum ? doctorMap[receiptNum] : null;
+  const isRenewal = currentTab === 'renewal';
+  const fileName = `${receiptNum||'no-receipt'}_${(item['氏名（漢字）']||'氏名不明').replace(/\s/g,'')}.pdf`;
+
+  const w = window.open('','_blank','width=800,height=1000');
+  w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+  <title>${fileName}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Hiragino Sans','Noto Sans JP',sans-serif;color:#111;padding:24px;font-size:11.5px;line-height:1.8;}
+    h1{font-size:17px;border-bottom:3px solid #1e4d35;padding-bottom:8px;margin-bottom:4px;color:#1e4d35;}
+    .meta{font-size:11px;color:#666;margin-bottom:18px;font-family:monospace;}
+    .sec{margin-bottom:14px;border:1px solid #ddd;border-radius:6px;overflow:hidden;}
+    .sec-title{background:#1e4d35;color:#fff;font-size:11.5px;font-weight:700;padding:5px 12px;}
+    .sec-title.blue{background:#1e3a5a;}
+    .row{display:flex;border-bottom:1px solid #eee;padding:4px 12px;}
+    .row:last-child{border-bottom:none;}
+    .k{width:130px;color:#555;font-weight:600;flex-shrink:0;font-size:11px;}
+    .v{flex:1;word-break:break-all;white-space:pre-wrap;font-size:11px;}
+    .no-doc{background:#fff8e0;padding:8px 12px;font-size:11px;color:#856404;}
+    .stamp{text-align:right;margin-top:20px;font-size:11px;color:#999;}
+    @media print{
+      @page{size:A4;margin:15mm 12mm;}
+      body{padding:0;}
+      button{display:none;}
+    }
+  </style>
+  </head><body>
+  <h1>障害年金 事前確認フォーム 回答内容</h1>
+  <div class="meta">受付番号：${receiptNum||'—'} ／ 種別：${isRenewal?'更新':'新規'} ／ 患者送信：${item['送信日時']||'—'} ／ 出力日時：${new Date().toLocaleString('ja-JP')}</div>
+
+  ${docData ? `
+  <div class="sec">
+    <div class="sec-title blue">🩺 医師入力（診察記録）</div>
+    <div class="row"><span class="k">患者氏名</span><span class="v">${docData['患者氏名']||'—'}</span></div>
+    <div class="row"><span class="k">主病名</span><span class="v">${docData['主病名']||'—'}</span></div>
+    <div class="row"><span class="k">既存障害</span><span class="v">${docData['既存障害']||'—'}</span></div>
+    <div class="row"><span class="k">現症日</span><span class="v">${docData['現症日']||'—'}</span></div>
+    <div class="row"><span class="k">日常生活能力の判定</span><span class="v">${docData['ADL判定']||'—'}</span></div>
+    <div class="row"><span class="k">日常生活能力の程度</span><span class="v">${docData['ADL程度']||'—'}</span></div>
+    ${docData['医師メモ']?`<div class="row"><span class="k">医師メモ</span><span class="v">${docData['医師メモ']}</span></div>`:''}
+  </div>` : `<div class="sec"><div class="no-doc">⏳ 医師の診察記録はまだ入力されていません</div></div>`}
+
+  <div class="sec">
+    <div class="sec-title">① 基本情報・確認</div>
+    <div class="row"><span class="k">氏名（漢字）</span><span class="v">${item['氏名（漢字）']||'—'}</span></div>
+    <div class="row"><span class="k">氏名（フリガナ）</span><span class="v">${item['氏名（フリガナ）']||'—'}</span></div>
+    <div class="row"><span class="k">診断書様式</span><span class="v">${item['診断書様式']||'—'}</span></div>
+    <div class="row"><span class="k">参考書類</span><span class="v">${item['参考書類']||'—'}</span></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">② 現症日${isRenewal?'':' ・ 初診情報'}</div>
+    <div class="row"><span class="k">現症日</span><span class="v">${item['現症日']||'—'}</span></div>
+    ${!isRenewal?`
+    <div class="row"><span class="k">精神科初診医療機関</span><span class="v">${item['精神科初診医療機関']||'—'}</span></div>
+    <div class="row"><span class="k">初診日</span><span class="v">${item['初診日']||'—'}</span></div>`:''}
+    <div class="row"><span class="k">年金事務所メモ</span><span class="v">${item['年金事務所メモ']||'—'}</span></div>
+  </div>
+
+  ${!isRenewal?`
+  <div class="sec">
+    <div class="sec-title">③ 教育歴</div>
+    <div class="row"><span class="k">生育歴</span><span class="v">${item['生育歴']||'—'}</span></div>
+    <div class="row"><span class="k">小学校</span><span class="v">${item['小学校']||'—'}</span></div>
+    <div class="row"><span class="k">中学校</span><span class="v">${item['中学校']||'—'}</span></div>
+    <div class="row"><span class="k">高校</span><span class="v">${item['高校']||'—'}</span></div>
+    <div class="row"><span class="k">最終学歴</span><span class="v">${item['最終学歴']||'—'}</span></div>
+    <div class="row"><span class="k">補足</span><span class="v">${item['教育歴補足']||'—'}</span></div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">③ 職歴 ・ 治療歴</div>
+    <div class="row"><span class="k">職歴</span><span class="v">${item['職歴']||'—'}</span></div>
+    <div class="row"><span class="k">治療歴</span><span class="v">${item['治療歴']||'—'}</span></div>
+  </div>`:''}
+
+  <div class="sec">
+    <div class="sec-title">${isRenewal?'③':'⑤'} 就労状況</div>
+    <div class="row"><span class="k">勤務先種別</span><span class="v">${item['勤務先種別']||'—'}</span></div>
+    <div class="row"><span class="k">雇用形態</span><span class="v">${item['雇用形態']||'—'}</span></div>
+    <div class="row"><span class="k">勤務年数</span><span class="v">${item['勤務年数']||'—'}</span></div>
+    <div class="row"><span class="k">給与</span><span class="v">${item['給与']||'—'}</span></div>
+    <div class="row"><span class="k">頻度</span><span class="v">${item['頻度']||'—'}</span></div>
+    <div class="row"><span class="k">業務内容</span><span class="v">${item['業務内容']||'—'}</span></div>
+    <div class="row"><span class="k">援助状況</span><span class="v">${item['援助状況']||'—'}</span></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">${isRenewal?'④':'⑥'} 日常生活状況</div>
+    <div class="row"><span class="k">生活環境</span><span class="v">${item['生活環境']||'—'}</span></div>
+    <div class="row"><span class="k">施設名</span><span class="v">${item['施設名']||'—'}</span></div>
+    <div class="row"><span class="k">同居者</span><span class="v">${item['同居者']||'—'}</span></div>
+    <div class="row"><span class="k">同居者詳細</span><span class="v">${item['同居者詳細']||'—'}</span></div>
+    <div class="row"><span class="k">福祉サービス</span><span class="v">${item['福祉サービス']||'—'}</span></div>
+    ${isRenewal?`<div class="row"><span class="k">前回からの変化</span><span class="v">${item['前回からの変化']||'—'}</span></div>`:''}
+  </div>
+
+  <div class="stamp">ひいらぎこころクリニック｜障害年金フォームシステム</div>
+
+  <script>
+    window.onload = function() {
+      window.print();
+    };
+  <\/script>
+  </body></html>`);
+  w.document.close();
+}
+</script>
+</body>
+</html>
